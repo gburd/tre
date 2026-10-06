@@ -692,10 +692,7 @@ main(int argc, char **argv)
   test_comp("^(foobar){~1}$", REG_EXTENDED, 0);
   test_exec("foobar", 0, REG_OK, 0, 6, 0, 6, END);
   test_exec("xfoobar", 0, REG_OK, 0, 7, 0, 7, END);
-  /*
-    This currently fails.
   test_exec("foobarx", 0, REG_OK, 0, 7, 0, 7, END);
-  */
   test_exec("fooxbar", 0, REG_OK, 0, 7, 0, 7, END);
   test_exec("foxbar", 0, REG_OK, 0, 6, 0, 6, END);
   test_exec("xoobar", 0, REG_OK, 0, 6, 0, 6, END);
@@ -708,6 +705,21 @@ main(int argc, char **argv)
   test_exec("xxfoobar", 0, REG_NOMATCH);
   test_exec("xfoxbar", 0, REG_NOMATCH);
   test_exec("foxbarx", 0, REG_NOMATCH);
+
+  /* Insertions between the last character and a following assertion. */
+  test_comp("^(caf){~1}$", REG_EXTENDED, 0);
+  test_exec("cafe", 0, REG_OK, 0, 4, 0, 4, END);
+  test_exec("cafxy", 0, REG_NOMATCH);
+  test_comp("^(caf){~2}$", REG_EXTENDED, 0);
+  test_exec("cafxy", 0, REG_OK, 0, 5, 0, 5, END);
+  test_comp("(caf){~1}$", REG_EXTENDED, 0);
+  test_exec("xcafe", 0, REG_OK, 1, 5, 1, 5, END);
+  test_comp("^(caf){~1}$", REG_EXTENDED | REG_NEWLINE, 0);
+  test_exec("cafe\nxyz", 0, REG_OK, 0, 4, 0, 4, END);
+  test_comp("(foo){~1}\\> bar", REG_EXTENDED, 0);
+  test_exec("foox bar", 0, REG_OK, 0, 8, 0, 4, END);
+  test_comp("foo (bar){~1}\\>", REG_EXTENDED, 0);
+  test_exec("foo barx", 0, REG_OK, 0, 8, 4, 8, END);
 
   /* At most one insert, two deletes, and three substitutions.
      Additionally, deletes cost two and substitutes one, and total
