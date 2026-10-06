@@ -510,15 +510,17 @@ tre_tnfa_run_backtrack(const tre_tnfa_t *tnfa, const void *string,
 
 	      states_seen[trans_i->state_id] = empty_br_match;
 
-	      /* Advance in input string and resync `prev_c', `next_c'
-		 and pos. */
+	      /* Advance past the matched text.  Read it instead of skipping
+		 it, so that `prev_c' is its last character, `next_c' and
+		 `pos_add_next' describe the character after it, and a
+		 STR_USER source is advanced past it as well.  Stop if the
+		 input does not advance (end of string). */
 	      DPRINT(("	 back reference matched\n"));
-	      str_byte += bt_len - 1;
-#ifdef TRE_WCHAR
-	      str_wide += bt_len - 1;
-#endif /* TRE_WCHAR */
-	      pos += bt_len - 1;
-	      GET_NEXT_WCHAR();
+	      {
+		ssize_t end = pos + bt_len;
+		while (pos < end && pos_add_next > 0)
+		  GET_NEXT_WCHAR();
+	      }
 	      DPRINT(("	 pos now %zd\n", pos));
 	    }
 	  else

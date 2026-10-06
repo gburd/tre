@@ -1681,6 +1681,16 @@ main(int argc, char **argv)
   test_exec("1234", 0, REG_NOMATCH);
   test_exec("12341234", 0, REG_OK, 0, 8, 0, 4, END);
 
+  /* Assertions after a back reference see its last character. */
+  test_comp("(-a)\\1\\>", REG_EXTENDED, 0);
+  test_exec("-a-a", 0, REG_OK, 0, 4, 0, 2, END);
+  test_comp("(a-)\\1\\<b", REG_EXTENDED, 0);
+  test_exec("a-a-b", 0, REG_OK, 0, 5, 0, 2, END);
+  test_comp("a()\\1\\>", REG_EXTENDED, 0);
+  test_exec("a", 0, REG_OK, 0, 1, 1, 1, END);
+  test_comp("(a\n)\\1^b", REG_EXTENDED | REG_NEWLINE, 0);
+  test_exec("a\na\nb", 0, REG_OK, 0, 5, 0, 2, END);
+
   /*
    * Test minimal repetitions (non-greedy repetitions)
    */
@@ -1866,6 +1876,10 @@ main(int argc, char **argv)
       test_exec("\303\251b", 0, REG_OK, 0, 3, END);
       test_comp("(ab|a)\303\251", REG_EXTENDED, 0);
       test_exec("a\303\251", 0, REG_OK, 0, 3, 0, 1, END);
+
+      /* An empty back reference before a multibyte character. */
+      test_comp("()\\1\303\251", REG_EXTENDED, 0);
+      test_exec("\303\251", 0, REG_OK, 0, 2, 0, 0, END);
     }
   else
     {
