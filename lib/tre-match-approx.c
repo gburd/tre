@@ -673,9 +673,7 @@ tre_tnfa_run_approx(const tre_tnfa_t *tnfa, const void *string, ssize_t len,
 	      int depth;
 	      int cost, cost0, err;
 
-	      if (trans->assertions
-		  && (CHECK_ASSERTIONS(trans->assertions)
-		      || CHECK_CHAR_CLASSES(trans, tnfa, eflags)))
+	      if (trans->assertions && CHECK_ASSERTIONS(trans->assertions))
 		{
 		  DPRINT(("  exact,  from %d: assert failed\n", id));
 		  continue;
@@ -689,11 +687,15 @@ tre_tnfa_run_approx(const tre_tnfa_t *tnfa, const void *string, ssize_t len,
 	      err = 0;
 
 	      if (trans->code_min > (tre_cint_t)prev_c
-		  || trans->code_max < (tre_cint_t)prev_c)
+		  || trans->code_max < (tre_cint_t)prev_c
+		  || (trans->assertions
+		      && CHECK_CHAR_CLASSES(trans, tnfa, eflags)))
 		{
 		  /* Handle substitutes.  The required character was not in
 		     the string, so match it in place of whatever was supposed
-		     to be there and increase costs accordingly. */
+		     to be there and increase costs accordingly.  A character
+		     outside a character class kept as an assertion (as in
+		     multibyte locales) is a mismatch like any other. */
 		  err = 1;
 
 		  /* Compute and check cost at current depth. */
