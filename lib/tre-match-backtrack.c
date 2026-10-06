@@ -457,7 +457,8 @@ tre_tnfa_run_backtrack(const tre_tnfa_t *tnfa, const void *string,
 	      {
 		DPRINT(("  substring (len %d) is [%d, %d[: '%.*s'\n",
 			bt_len, so, eo, bt_len, (char*)string + so));
-		DPRINT(("  current string is '%.*s'\n", slen, str_byte - 1));
+		DPRINT(("  current string is '%.*s'\n", slen,
+			(char*)string + pos));
 	      }
 #ifdef TRE_WCHAR
 	    else if (type == STR_WIDE)
@@ -483,8 +484,8 @@ tre_tnfa_run_backtrack(const tre_tnfa_t *tnfa, const void *string,
 				 (size_t)bt_len);
 #endif /* TRE_WCHAR */
 	      else
-		result = strncmp((const char*)string + so, str_byte - 1,
-				 (size_t)bt_len);
+		result = strncmp((const char*)string + so,
+				 (const char*)string + pos, (size_t)bt_len);
 	    }
 	  else if (len - pos < bt_len)
 	    result = 1;
@@ -494,8 +495,8 @@ tre_tnfa_run_backtrack(const tre_tnfa_t *tnfa, const void *string,
 			     (size_t)bt_len);
 #endif /* TRE_WCHAR */
 	  else
-	    result = memcmp((const char*)string + so, str_byte - 1,
-			    (size_t)bt_len);
+	    result = memcmp((const char*)string + so,
+			    (const char*)string + pos, (size_t)bt_len);
 
 	  if (result == 0)
 	    {

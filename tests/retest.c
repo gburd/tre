@@ -1880,6 +1880,29 @@ main(int argc, char **argv)
       /* An empty back reference before a multibyte character. */
       test_comp("()\\1\303\251", REG_EXTENDED, 0);
       test_exec("\303\251", 0, REG_OK, 0, 2, 0, 0, END);
+
+      /* Back references to multibyte text.  The expected results are
+	 those of glibc regexec(). */
+      test_comp("(\303\251a)\\1", REG_EXTENDED, 0);
+      test_exec("\303\251a\303\251a", 0, REG_OK, 0, 6, 0, 3, END);
+      test_comp("(\303\251)\\1", REG_EXTENDED, 0);
+      test_exec("\303\251\303\251", 0, REG_OK, 0, 4, 0, 2, END);
+      test_exec("a\303\251\303\251", 0, REG_OK, 1, 5, 1, 3, END);
+      test_exec("\303\251a", 0, REG_NOMATCH);
+      test_comp("x(\303\251)\\1", REG_EXTENDED, 0);
+      test_exec("x\303\251\303\251", 0, REG_OK, 0, 5, 1, 3, END);
+      test_comp("(\303\251)\\1b", REG_EXTENDED, 0);
+      test_exec("\303\251\303\251b", 0, REG_OK, 0, 5, 0, 2, END);
+      test_comp("(\303\251a|\303\251b)\\1", REG_EXTENDED, 0);
+      test_exec("\303\251b\303\251b", 0, REG_OK, 0, 6, 0, 3, END);
+      test_comp("(\303\251)\\1\\>", REG_EXTENDED, 0);
+      test_exec("\303\251\303\251", 0, REG_OK, 0, 4, 0, 2, END);
+      /* A reference must not be compared with the text before the
+	 current position. */
+      test_comp("(a)\\1", REG_EXTENDED, 0);
+      test_exec("a", 0, REG_NOMATCH);
+      test_comp("x(a)\\1", REG_EXTENDED, 0);
+      test_exec("xa", 0, REG_NOMATCH);
     }
   else
     {
