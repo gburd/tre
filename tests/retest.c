@@ -1851,6 +1851,26 @@ main(int argc, char **argv)
     {
       fprintf(outf, "\nTRE_MULTIBYTE enabled, but skipping LC_CTYPE ja_JP.eucJP (locale unavailable)\n");
     }
+
+  if (setlocale(LC_CTYPE, "en_US.UTF-8") != NULL ||
+      setlocale(LC_CTYPE, "C.UTF-8") != NULL)
+    {
+      fprintf(outf, "\nTesting LC_CTYPE en_US.UTF-8\n");
+      /* "\303\251" is U+00E9, two bytes in UTF-8.  Offsets are in bytes. */
+
+      /* Match offsets when the backtracking matcher backtracks or
+	 restarts after a multibyte character. */
+      test_comp("b", REG_EXTENDED, 0);
+      test_exec("\303\251b", 0, REG_OK, 2, 3, END);
+      test_comp("\303\251a|\303\251b", REG_EXTENDED, 0);
+      test_exec("\303\251b", 0, REG_OK, 0, 3, END);
+      test_comp("(ab|a)\303\251", REG_EXTENDED, 0);
+      test_exec("a\303\251", 0, REG_OK, 0, 3, 0, 1, END);
+    }
+  else
+    {
+      fprintf(outf, "\nTRE_MULTIBYTE enabled, but skipping LC_CTYPE en_US.UTF-8 (locale unavailable)\n");
+    }
 #endif /* TRE_MULTIBYTE */
 #endif
 

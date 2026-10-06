@@ -74,6 +74,7 @@ char *alloca ();
 
 typedef struct {
   int pos;
+  unsigned int pos_add_next;
   const char *str_byte;
 #ifdef TRE_WCHAR
   const wchar_t *str_wide;
@@ -163,6 +164,7 @@ typedef struct tre_backtrack_struct {
       else								      \
 	stack = stack->next;						      \
       stack->item.pos = (_pos);						      \
+      stack->item.pos_add_next = pos_add_next;				      \
       stack->item.str_byte = (_str_byte);				      \
       BT_STACK_WIDE_IN(_str_wide);					      \
       stack->item.state = (_state);					      \
@@ -180,6 +182,7 @@ typedef struct tre_backtrack_struct {
       int i;								      \
       assert(stack->prev);						      \
       pos = stack->item.pos;						      \
+      pos_add_next = stack->item.pos_add_next;				      \
       if (type == STR_USER)                                                   \
         str_source->rewind(pos + pos_add_next, str_source->context);          \
       str_byte = stack->item.str_byte;					      \
@@ -223,6 +226,7 @@ tre_tnfa_run_backtrack(const tre_tnfa_t *tnfa, const void *string,
   int next_c_start;
   const char *str_byte_start;
   int pos_start = -1;
+  unsigned int pos_add_next_start = 1;
 #ifdef TRE_WCHAR
   const wchar_t *str_wide_start;
 #endif /* TRE_WCHAR */
@@ -328,6 +332,7 @@ tre_tnfa_run_backtrack(const tre_tnfa_t *tnfa, const void *string,
     str_source->rewind(pos + pos_add_next, str_source->context);
   GET_NEXT_WCHAR();
   pos_start = pos;
+  pos_add_next_start = pos_add_next;
   next_c_start = next_c;
   str_byte_start = str_byte;
 #ifdef TRE_WCHAR
@@ -641,6 +646,7 @@ tre_tnfa_run_backtrack(const tre_tnfa_t *tnfa, const void *string,
 		}
 	      DPRINT(("restarting from next start position\n"));
 	      next_c = (tre_char_t) next_c_start;
+	      pos_add_next = pos_add_next_start;
 #ifdef TRE_MBSTATE
 	      mbstate = mbstate_start;
 #endif /* TRE_MBSTATE */
